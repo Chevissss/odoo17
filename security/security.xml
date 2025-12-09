@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- Categoría de módulo -->
+        <record id="module_category_sports_booking" model="ir.module.category">
+            <field name="name">Reservas Deportivas</field>
+            <field name="description">Gestión de reservas de canchas deportivas</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Grupo: Usuario Portal (solo reservas propias) -->
+        <record id="group_sports_booking_portal" model="res.groups">
+            <field name="name">Portal - Reservas Propias</field>
+            <field name="category_id" ref="module_category_sports_booking"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
+
+        <!-- Grupo: Staff (gestión de reservas) -->
+        <record id="group_sports_booking_staff" model="res.groups">
+            <field name="name">Staff - Gestión de Reservas</field>
+            <field name="category_id" ref="module_category_sports_booking"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Grupo: Admin (configuración completa) -->
+        <record id="group_sports_booking_admin" model="res.groups">
+            <field name="name">Administrador - Configuración Total</field>
+            <field name="category_id" ref="module_category_sports_booking"/>
+            <field name="implied_ids" eval="[(4, ref('group_sports_booking_staff'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Reglas de Acceso a Registros -->
+        
+        <!-- Portal: Solo sus propias reservas -->
+        <record id="sports_booking_portal_rule" model="ir.rule">
+            <field name="name">Portal: Ver solo mis reservas</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('group_sports_booking_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Portal: Ver todas las canchas (lectura) -->
+        <record id="sports_field_portal_rule" model="ir.rule">
+            <field name="name">Portal: Ver canchas activas</field>
+            <field name="model_id" ref="model_sports_field"/>
+            <field name="domain_force">[('active', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('group_sports_booking_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Staff: Ver todas las reservas -->
+        <record id="sports_booking_staff_rule" model="ir.rule">
+            <field name="name">Staff: Ver todas las reservas</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_sports_booking_staff'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Staff: Ver todas las canchas -->
+        <record id="sports_field_staff_rule" model="ir.rule">
+            <field name="name">Staff: Ver todas las canchas</field>
+            <field name="model_id" ref="model_sports_field"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_sports_booking_staff'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Admin: Acceso total -->
+        <record id="sports_field_admin_rule" model="ir.rule">
+            <field name="name">Admin: Acceso total a canchas</field>
+            <field name="model_id" ref="model_sports_field"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_sports_booking_admin'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Secuencia para número de reserva -->
+        <record id="seq_sports_booking" model="ir.sequence">
+            <field name="name">Reserva de Cancha</field>
+            <field name="code">sports.booking</field>
+            <field name="prefix">RES</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     ARCHIVO: views/portal_templates.xml
+     ==================================================================================== -->
+<odoo>
+
+    <!-- Extender menú del portal -->
+    <template id="portal_my_home_menu_bookings" name="Portal: Bookings Menu" inherit_id="portal.portal_my_home" priority="30">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/sports_booking/static/description/icon.png'"/>
+                <t t-set="title">Reservas de Canchas</t>
+                <t t-set="url" t-value="'/my/bookings'"/>
+                <t t-set="placeholder_count" t-value="'booking_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- Lista de Mis Reservas -->
+    <template id="portal_my_bookings" name="Mis Reservas">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Mis Reservas</t>
+            </t>
+            
+            <t t-if="not bookings">
+                <div class="alert alert-info text-center" role="alert">
+                    <p class="mb-0">
+                        <strong>No tienes reservas aún.</strong>
+                    </p>
+                    <p class="mb-0">
+                        <a href="/bookings/new" class="btn btn-primary mt-3">
+                            <i class="fa fa-plus"/> Hacer una Reserva
+                        </a>
+                    </p>
+                </div>
+            </t>
+            
+            <t t-if="bookings" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Reserva #</th>
+                        <th>Cancha</th>
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Precio</th>
+                        <th class="text-center">Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="bookings" t-as="booking">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/bookings/#{booking.id}">
+                                    <t t-esc="booking.name"/>
+                                </a>
+                            </td>
+                            <td>
+                                <span t-field="booking.field_id"/>
+                                <br/>
+                                <small class="text-muted">
+                                    <t t-esc="dict(booking._fields['sport_type'].selection).get(booking.sport_type)"/>
+                                </small>
+                            </td>
+                            <td>
+                                <span t-field="booking.booking_date" t-options='{"widget": "date"}'/>
+                            </td>
+                            <td>
+                                <t t-esc="'{:02.0f}:{:02.0f}'.format(*divmod(booking.start_time * 60, 60))"/>
+                                -
+                                <t t-esc="'{:02.0f}:{:02.0f}'.format(*divmod(booking.end_time * 60, 60))"/>
+                                <br/>
+                                <small class="text-muted">
+                                    (<t t-esc="booking.duration"/> hrs)
+                                </small>
+                            </td>
+                            <td>
+                                <span t-field="booking.total_price" t-options='{"widget": "monetary", "display_currency": booking.currency_id}'/>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="booking.state == 'draft'" class="badge badge-secondary">Borrador</span>
+                                <span t-if="booking.state == 'pending'" class="badge badge-info">Pendiente</span>
+                                <span t-if="booking.state == 'confirmed'" class="badge badge-success">Confirmada</span>
+                                <span t-if="booking.state == 'in_progress'" class="badge badge-primary">En Curso</span>
+                                <span t-if="booking.state == 'completed'" class="badge badge-dark">Completada</span>
+                                <span t-if="booking.state == 'cancelled'" class="badge badge-danger">Cancelada</span>
+                            </td>
+                            <td class="text-right">
+                                <a t-attf-href="/my/bookings/#{booking.id}" class="btn btn-sm btn-secondary">
+                                    <i class="fa fa-eye"/> Ver
+                                </a>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+            
+            <div class="text-center mt-4 mb-4">
+                <a href="/bookings/new" class="btn btn-primary btn-lg">
+                    <i class="fa fa-plus"/> Nueva Reserva
+                </a>
+                <a href="/bookings/fields" class="btn btn-outline-primary btn-lg ml-2">
+                    <i class="fa fa-list"/> Ver Canchas Disponibles
+                </a>
+            </div>
+        </t>
+    </template>
+
+    <!-- Detalle de Reserva -->
+    <template id="portal_booking_detail" name="Detalle de Reserva">
+        <t t-call="portal.portal_layout">
+            <t t-set="o_portal_fullwidth_alert" t-value="True"/>
+            
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2">
+                        
+                        <!-- Mensajes de estado -->
+                        <t t-if="request.params.get('message') == 'success'">
+                            <div class="alert alert-success alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert">×</button>
+                                <strong>¡Reserva realizada con éxito!</strong> Tu reserva ha sido confirmada.
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('message') == 'cancelled'">
+                            <div class="alert alert-info alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert">×</button>
+                                <strong>Reserva cancelada.</strong> Tu reserva ha sido cancelada exitosamente.
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('error')">
+                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert">×</button>
+                                <strong>Error:</strong> <t t-esc="request.params.get('error')"/>
+                            </div>
+                        </t>
+                        
+                        <!-- Encabezado -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h3 class="mb-0">
+                                    <i class="fa fa-ticket"/> Reserva <t t-esc="booking.name"/>
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Estado</h5>
+                                        <p>
+                                            <span t-if="booking.state == 'draft'" class="badge badge-secondary badge-lg">Borrador</span>
+                                            <span t-if="booking.state == 'pending'" class="badge badge-info badge-lg">Pendiente</span>
+                                            <span t-if="booking.state == 'confirmed'" class="badge badge-success badge-lg">Confirmada</span>
+                                            <span t-if="booking.state == 'in_progress'" class="badge badge-primary badge-lg">En Curso</span>
+                                            <span t-if="booking.state == 'completed'" class="badge badge-dark badge-lg">Completada</span>
+                                            <span t-if="booking.state == 'cancelled'" class="badge badge-danger badge-lg">Cancelada</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <t t-if="booking.state not in ['completed', 'cancelled']">
+                                            <form method="post" t-attf-action="/bookings/cancel/#{booking.id}" style="display: inline;">
+                                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de cancelar esta reserva?')">
+                                                    <i class="fa fa-times"/> Cancelar Reserva
+                                                </button>
+                                            </form>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información de la Cancha -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4 class="mb-0"><i class="fa fa-futbol-o"/> Información de la Cancha</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <t t-if="booking.field_id.image">
+                                            <img t-att-src="image_data_uri(booking.field_id.image)" 
+                                                 class="img-fluid rounded" 
+                                                 alt="Cancha"/>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="bg-light p-5 text-center rounded">
+                                                <i class="fa fa-image fa-3x text-muted"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5><t t-esc="booking.field_id.name"/></h5>
+                                        <p class="text-muted">
+                                            <strong>Código:</strong> <t t-esc="booking.field_id.code"/><br/>
+                                            <strong>Deporte:</strong> <t t-esc="dict(booking._fields['sport_type'].selection).get(booking.sport_type)"/><br/>
+                                            <t t-if="booking.field_id.surface_type">
+                                                <strong>Superficie:</strong> <t t-esc="dict(booking.field_id._fields['surface_type'].selection).get(booking.field_id.surface_type)"/><br/>
+                                            </t>
+                                        </p>
+                                        <p>
+                                            <t t-if="booking.field_id.has_lighting">
+                                                <span class="badge badge-info">✓ Iluminación</span>
+                                            </t>
+                                            <t t-if="booking.field_id.has_roof">
+                                                <span class="badge badge-info">✓ Techado</span>
+                                            </t>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detalles de la Reserva -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4 class="mb-0"><i class="fa fa-calendar"/> Detalles de la Reserva</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Fecha:</strong><br/>
+                                        <span t-field="booking.booking_date" t-options='{"widget": "date"}' class="text-primary" style="font-size: 1.2em;"/></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Horario:</strong><br/>
+                                        <span class="text-primary" style="font-size: 1.2em;">
+                                            <t t-esc="'{:02.0f}:{:02.0f}'.format(*divmod(booking.start_time * 60, 60))"/>
+                                            -
+                                            <t t-esc="'{:02.0f}:{:02.0f}'.format(*divmod(booking.end_time * 60, 60))"/>
+                                        </span>
+                                        <br/>
+                                        <small class="text-muted">Duración: <t t-esc="booking.duration"/> horas</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <hr/>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong>Precio por hora:</strong> 
+                                            <span t-field="booking.price_per_hour" t-options='{"widget": "monetary"}'/>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong>Precio Total:</strong> 
+                                            <span t-field="booking.total_price" 
+                                                  t-options='{"widget": "monetary"}' 
+                                                  class="text-success" 
+                                                  style="font-size: 1.3em; font-weight: bold;"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <t t-if="booking.players_count">
+                                    <p><strong>Número de jugadores:</strong> <t t-esc="booking.players_count"/></p>
+                                </t>
+                                
+                                <t t-if="booking.notes">
+                                    <p><strong>Notas:</strong><br/>
+                                    <span t-field="booking.notes"/></p>
+                                </t>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="text-center mb-5">
+                            <a href="/my/bookings" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left"/> Volver a Mis Reservas
+                            </a>
+                            <a href="/bookings/new" class="btn btn-primary ml-2">
+                                <i class="fa fa-plus"/> Nueva Reserva
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Formulario de Nueva Reserva -->
+    <template id="portal_booking_new" name="Nueva Reserva">
+        <t t-call="portal.frontend_layout">
+            <div class="container mt-5 mb-5">
+                <div class="row">
+                    <div class="col-lg-10 offset-lg-1">
+                        
+                        <t t-if="request.params.get('error')">
+                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert">×</button>
+                                <strong>Error:</strong> <t t-esc="request.params.get('error')"/>
+                            </div>
+                        </t>
+                        
+                        <div class="card shadow-lg">
+                            <div class="card-header bg-primary text-white">
+                                <h2 class="mb-0">
+                                    <i class="fa fa-calendar-plus-o"/> Nueva Reserva de Cancha
+                                </h2>
+                            </div>
+                            <div class="card-body p-4">
+                                
+                                <form method="post" action="/bookings/create" id="booking_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    
+                                    <!-- Paso 1: Seleccionar Cancha -->
+                                    <div class="booking-step" id="step-1">
+                                        <h4 class="mb-3">
+                                            <span class="badge badge-primary">1</span> Selecciona una Cancha
+                                        </h4>
+                                        
+                                        <div class="form-group">
+                                            <label for="field_id">Cancha Deportiva *</label>
+                                            <select name="field_id" id="field_id" class="form-control form-control-lg" required="required">
+                                                <option value="">-- Selecciona una cancha --</option>
+                                                <t t-foreach="fields" t-as="field">
+                                                    <option t-att-value="field.id" 
+                                                            t-att-data-price="field.price_per_hour"
+                                                            t-att-data-opening="field.opening_time"
+                                                            t-att-data-closing="field.closing_time">
+                                                        <t t-esc="field.name"/> - 
+                                                        <t t-esc="dict(field._fields['sport_type'].selection).get(field.sport_type)"/> - 
+                                                        S/. <t t-esc="'{:.2f}'.format(field.price_per_hour)"/>/hora
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="field_info" class="alert alert-info" style="display: none;">
+                                            <strong>Información de la cancha:</strong>
+                                            <p id="field_details" class="mb-0 mt-2"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4"/>
+                                    
+                                    <!-- Paso 2: Seleccionar Fecha -->
+                                    <div class="booking-step" id="step-2">
+                                        <h4 class="mb-3">
+                                            <span class="badge badge-primary">2</span> Selecciona la Fecha
+                                        </h4>
+                                        
+                                        <div class="form-group">
+                                            <label for="booking_date">Fecha de la Reserva *</label>
+                                            <input type="date" 
+                                                   name="booking_date" 
+                                                   id="booking_date" 
+                                                   class="form-control form-control-lg" 
+                                                   required="required"
+                                                   t-att-min="today"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4"/>
+                                    
+                                    <!-- Paso 3: Seleccionar Horario -->
+                                    <div class="booking-step" id="step-3">
+                                        <h4 class="mb-3">
+                                            <span class="badge badge-primary">3</span> Selecciona el Horario
+                                        </h4>
+                                        
+                                        <div id="loading_slots" class="text-center" style="display: none;">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="sr-only">Cargando horarios...</span>
+                                            </div>
+                                            <p class="mt-2">Cargando horarios disponibles...</p>
+                                        </div>
+                                        
+                                        <div id="available_slots" class="row"></div>
+                                        
+                                        <input type="hidden" name="start_time" id="start_time"/>
+                                        <input type="hidden" name="end_time" id="end_time"/>
+                                        
+                                        <div id="selected_slot_info" class="alert alert-success mt-3" style="display: none;">
+                                            <strong>Horario seleccionado:</strong>
+                                            <p id="slot_details" class="mb-0 mt-2"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4"/>
+                                    
+                                    <!-- Paso 4: Información Adicional -->
+                                    <div class="booking-step" id="step-4">
+                                        <h4 class="mb-3">
+                                            <span class="badge badge-primary">4</span> Información Adicional (Opcional)
+                                        </h4>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="players_count">Número de Jugadores</label>
+                                                <input type="number" 
+                                                       name="players_count" 
+                                                       id="players_count" 
+                                                       class="form-control" 
+                                                       min="1"
+                                                       placeholder="Ej: 10"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="notes">Notas o Comentarios</label>
+                                            <textarea name="notes" 
+                                                      id="notes" 
+                                                      class="form-control" 
+                                                      rows="3" 
+                                                      placeholder="Algún comentario o requisito especial..."></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4"/>
+                                    
+                                    <!-- Resumen y Confirmación -->
+                                    <div id="booking_summary" style="display: none;">
+                                        <h4 class="mb-3">
+                                            <i class="fa fa-check-circle text-success"/> Resumen de tu Reserva
+                                        </h4>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>Cancha:</strong> <span id="summary_field"></span></p>
+                                                        <p><strong>Fecha:</strong> <span id="summary_date"></span></p>
+                                                        <p><strong>Horario:</strong> <span id="summary_time"></span></p>
+                                                    </div>
+                                                    <div class="col-md-6 text-right">
+                                                        <p><strong>Duración:</strong> <span id="summary_duration"></span></p>
+                                                        <p><strong>Precio por hora:</strong> <span id="summary_price_hour"></span></p>
+                                                        <h4 class="text-success mt-3">
+                                                            <strong>Total: <span id="summary_total"></span></strong>
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <button type="submit" 
+                                                class="btn btn-success btn-lg" 
+                                                id="submit_button" 
+                                                disabled="disabled">
+                                            <i class="fa fa-check"/> Confirmar Reserva
+                                        </button>
+                                        <a href="/my/bookings" class="btn btn-outline-secondary btn-lg ml-2">
+                                            <i class="fa fa-times"/> Cancelar
+                                        </a>
+                                    </div>
+                                    
+                                </form>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Catálogo de Canchas -->
+    <template id="portal_fields_catalog" name="Catálogo de Canchas">
+        <t t-call="portal.frontend_layout">
+            <div class="container mt-5 mb-5">
+                
+                <div class="text-center mb-5">
+                    <h1 class="display-4">
+                        <i class="fa fa-futbol-o"/> Nuestras Canchas Deportivas
+                    </h1>
+                    <p class="lead text-muted">Encuentra la cancha perfecta para tu deporte favorito</p>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="btn-toolbar justify-content-center" role="toolbar">
+                            <div class="btn-group mr-2" role="group">
+                                <a href="/bookings/fields" 
+                                   t-att-class="'btn ' + ('btn-primary' if not selected_sport else 'btn-outline-primary')">
+                                    Todas
+                                </a>
+                                <t t-foreach="sport_types" t-as="sport">
+                                    <a t-attf-href="/bookings/fields?sport_type=#{sport}" 
+                                       t-att-class="'btn ' + ('btn-primary' if selected_sport == sport else 'btn-outline-primary')">
+                                        <t t-esc="dict(fields[0]._fields['sport_type'].selection if fields else {}).get(sport, sport)"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de Canchas -->
+                <t t-if="not fields">
+                    <div class="alert alert-info text-center">
+                        <p class="mb-0">No hay canchas disponibles en este momento.</p>
+                    </div>
+                </t>
+                
+                <div class="row">
+                    <t t-foreach="fields" t-as="field">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm hover-shadow">
+                                <t t-if="field.image">
+                                    <img t-att-src="image_data_uri(field.image)" 
+                                         class="card-img-top" 
+                                         alt="Cancha"
+                                         style="height: 200px; object-fit: cover;"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="bg-light d-flex align-items-center justify-content-center" 
+                                         style="height: 200px;">
+                                        <i class="fa fa-image fa-5x text-muted"/>
+                                    </div>
+                                </t>
+                                
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <t t-esc="field.name"/>
+                                    </h5>
+                                    
+                                    <p class="card-text text-muted">
+                                        <strong><t t-esc="dict(field._fields['sport_type'].selection).get(field.sport_type)"/></strong>
+                                    </p>
+                                    
+                                    <p class="card-text small">
+                                        <t t-if="field.surface_type">
+                                            <i class="fa fa-check-circle text-success"/> 
+                                            <t t-esc="dict(field._fields['surface_type'].selection).get(field.surface_type)"/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="field.has_lighting">
+                                            <i class="fa fa-check-circle text-success"/> Iluminación<br/>
+                                        </t>
+                                        <t t-if="field.has_roof">
+                                            <i class="fa fa-check-circle text-success"/> Techado<br/>
+                                        </t>
+                                        <t t-if="field.max_players">
+                                            <i class="fa fa-users"/> Capacidad: <t t-esc="field.max_players"/> jugadores
+                                        </t>
+                                    </p>
+                                    
+                                    <t t-if="field.description">
+                                        <p class="card-text small text-muted">
+                                            <t t-esc="field.description[:100]"/>
+                                            <t t-if="len(field.description) &gt; 100">...</t>
+                                        </p>
+                                    </t>
+                                    
+                                    <div class="mt-auto">
+                                        <hr/>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="mb-0 text-success">
+                                                    S/. <t t-esc="'{:.2f}'.format(field.price_per_hour)"/>
+                                                </h5>
+                                                <small class="text-muted">por hora</small>
+                                            </div>
+                                            <div>
+                                                <a href="/bookings/new" class="btn btn-primary">
+                                                    <i class="fa fa-calendar"/> Reservar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                
+                <div class="text-center mt-5">
+                    <a href="/bookings/new" class="btn btn-success btn-lg">
+                        <i class="fa fa-plus"/> Hacer una Reserva Ahora
+                    </a>
+                </div>
+                
+            </div>
+        </t>
+    </template>
+
+</odoo>

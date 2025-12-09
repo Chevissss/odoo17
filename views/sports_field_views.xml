@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista Lista de Canchas -->
+    <record id="view_sports_field_tree" model="ir.ui.view">
+        <field name="name">sports.field.tree</field>
+        <field name="model">sports.field</field>
+        <field name="arch" type="xml">
+            <tree string="Canchas Deportivas" decoration-muted="not active">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="sport_type"/>
+                <field name="surface_type"/>
+                <field name="price_per_hour" widget="monetary"/>
+                <field name="has_lighting" widget="boolean_toggle"/>
+                <field name="booking_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Canchas -->
+    <record id="view_sports_field_form" model="ir.ui.view">
+        <field name="name">sports.field.form</field>
+        <field name="model">sports.field</field>
+        <field name="arch" type="xml">
+            <form string="Cancha Deportiva">
+                <header>
+                    <button name="%(action_sports_booking_from_field)d" 
+                            string="Nueva Reserva" 
+                            type="action" 
+                            class="oe_highlight"
+                            groups="sports_booking.group_sports_booking_staff"/>
+                </header>
+                <sheet>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name" string="Nombre de la Cancha"/>
+                        <h1>
+                            <field name="name" placeholder="ej: Cancha Principal"/>
+                        </h1>
+                        <label for="code"/>
+                        <h2>
+                            <field name="code" placeholder="ej: CANCHA-01"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Información General">
+                            <field name="sport_type"/>
+                            <field name="surface_type"/>
+                            <field name="max_players"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Características">
+                            <field name="has_lighting"/>
+                            <field name="has_roof"/>
+                            <field name="booking_count"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Precios" name="pricing">
+                            <group>
+                                <group string="Tarifas">
+                                    <field name="price_per_hour" widget="monetary"/>
+                                    <field name="price_weekend" widget="monetary"/>
+                                    <field name="price_night" widget="monetary"/>
+                                </group>
+                                <group string="Horarios">
+                                    <field name="opening_time" widget="float_time"/>
+                                    <field name="closing_time" widget="float_time"/>
+                                    <field name="time_slot_duration"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Disponibilidad" name="availability">
+                            <group string="Días Disponibles">
+                                <group>
+                                    <field name="available_monday"/>
+                                    <field name="available_tuesday"/>
+                                    <field name="available_wednesday"/>
+                                    <field name="available_thursday"/>
+                                </group>
+                                <group>
+                                    <field name="available_friday"/>
+                                    <field name="available_saturday"/>
+                                    <field name="available_sunday"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Descripción" name="description">
+                            <field name="description" placeholder="Descripción detallada de la cancha..."/>
+                        </page>
+                        <page string="Reservas" name="bookings">
+                            <field name="booking_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="booking_date"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                    <field name="state" widget="badge" 
+                                           decoration-success="state == 'confirmed'"
+                                           decoration-info="state == 'pending'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Kanban de Canchas -->
+    <record id="view_sports_field_kanban" model="ir.ui.view">
+        <field name="name">sports.field.kanban</field>
+        <field name="model">sports.field</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="sport_type"/>
+                <field name="price_per_hour"/>
+                <field name="image"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('sports.field', 'image', record.id.raw_value)" alt="Cancha"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <div class="o_kanban_tags_section">
+                                    <span class="badge badge-pill"><field name="sport_type"/></span>
+                                </div>
+                                <ul>
+                                    <li>Precio: <field name="price_per_hour" widget="monetary"/>/hora</li>
+                                    <li t-if="record.has_lighting.raw_value">✓ Iluminación</li>
+                                    <li t-if="record.has_roof.raw_value">✓ Techado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Búsqueda de Canchas -->
+    <record id="view_sports_field_search" model="ir.ui.view">
+        <field name="name">sports.field.search</field>
+        <field name="model">sports.field</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Canchas">
+                <field name="name" string="Cancha" 
+                       filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="sport_type"/>
+                <field name="surface_type"/>
+                <filter string="Activas" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivas" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Con Iluminación" name="has_lighting" domain="[('has_lighting', '=', True)]"/>
+                <filter string="Techadas" name="has_roof" domain="[('has_roof', '=', True)]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Deporte" name="group_sport" context="{'group_by': 'sport_type'}"/>
+                    <filter string="Superficie" name="group_surface" context="{'group_by': 'surface_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Canchas -->
+    <record id="action_sports_field" model="ir.actions.act_window">
+        <field name="name">Canchas Deportivas</field>
+        <field name="res_model">sports.field</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva cancha deportiva
+            </p>
+            <p>
+                Configure las canchas disponibles con sus características,
+                precios y horarios de disponibilidad.
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,241 @@
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+}
+
+/* Slots de tiempo */
+.time-slot {
+    padding: 15px 5px;
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.time-slot:hover:not(.disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.time-slot.btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.time-slot.disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+/* Pasos del formulario */
+.booking-step {
+    margin-bottom: 20px;
+}
+
+.booking-step h4 .badge {
+    font-size: 1rem;
+    padding: 8px 12px;
+    margin-right: 10px;
+}
+
+/* Tarjetas de canchas */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Badges más grandes */
+.badge-lg {
+    font-size: 1em;
+    padding: 8px 15px;
+}
+
+/* Alertas mejoradas */
+.alert {
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.alert-info {
+    border-left-color: #17a2b8;
+}
+
+.alert-success {
+    border-left-color: #28a745;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+}
+
+/* Botones mejorados */
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-lg {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Spinner de carga */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Tablas en portal */
+.table {
+    background: white;
+}
+
+.table thead th {
+    border-top: none;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .time-slot {
+        padding: 10px 5px;
+        font-size: 0.8em;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+}
+
+/* Estados de reserva */
+.badge-secondary {
+    background-color: #6c757d;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-primary {
+    background-color: #007bff;
+}
+
+.badge-dark {
+    background-color: #343a40;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+/* Mejoras de formularios */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.form-control-lg {
+    font-size: 1.1rem;
+    padding: 12px 20px;
+}
+
+/* Efectos de hover en tablas */
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Loading state */
+#loading_slots {
+    padding: 40px 0;
+}
+
+/* Botón deshabilitado */
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Mejoras visuales para imágenes */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.img-fluid {
+    border-radius: 8px;
+}
+
+/* Espaciado consistente */
+.container {
+    max-width: 1200px;
+}
+
+/* Animaciones suaves */
+* {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Mejorar apariencia de selects */
+select.form-control {
+    cursor: pointer;
+}
+
+select.form-control option {
+    padding: 10px;
+}
+
+/* Resumen de reserva destacado */
+#booking_summary .card {
+    border: 2px solid #28a745;
+}
+
+/* Footer sticky para botones */
+.text-center.mt-4 {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 20px 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+}

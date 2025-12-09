@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sports_field_admin,sports.field.admin,model_sports_field,group_sports_booking_admin,1,1,1,1
+access_sports_field_staff,sports.field.staff,model_sports_field,group_sports_booking_staff,1,0,0,0
+access_sports_field_portal,sports.field.portal,model_sports_field,group_sports_booking_portal,1,0,0,0
+access_sports_field_public,sports.field.public,model_sports_field,base.group_public,1,0,0,0
+access_sports_booking_admin,sports.booking.admin,model_sports_booking,group_sports_booking_admin,1,1,1,1
+access_sports_booking_staff,sports.booking.staff,model_sports_booking,group_sports_booking_staff,1,1,1,1
+access_sports_booking_portal,sports.booking.portal,model_sports_booking,group_sports_booking_portal,1,1,1,0
+access_sports_booking_public,sports.booking.public,model_sports_booking,base.group_public,1,0,1,0

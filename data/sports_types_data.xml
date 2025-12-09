@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     ARCHIVO: data/sports_types_data.xml
+     Datos iniciales opcionales del sistema
+     ==================================================================================== -->
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Secuencia para numeración de reservas -->
+        <record id="sequence_sports_booking" model="ir.sequence">
+            <field name="name">Secuencia Reservas Deportivas</field>
+            <field name="code">sports.booking</field>
+            <field name="prefix">RES</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <!-- Configuración de servidor de correo para notificaciones (opcional) -->
+        <record id="sports_booking_email_template" model="mail.template">
+            <field name="name">Confirmación de Reserva Deportiva</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="subject">Confirmación de Reserva ${object.name}</field>
+            <field name="email_from">${(object.user_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.partner_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                    <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        
+                        <!-- Encabezado -->
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #28a745; margin: 0;">¡Reserva Confirmada!</h1>
+                            <p style="color: #6c757d; margin-top: 10px;">Tu cancha está reservada</p>
+                        </div>
+
+                        <!-- Información de la reserva -->
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3 style="color: #343a40; margin-top: 0;">Detalles de tu Reserva</h3>
+                            
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057;">Número de Reserva:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; color: #343a40; text-align: right;">${object.name}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057;">Cancha:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; color: #343a40; text-align: right;">${object.field_id.name}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057;">Deporte:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; color: #343a40; text-align: right;">${dict(object._fields['sport_type'].selection).get(object.sport_type)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057;">Fecha:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; color: #343a40; text-align: right;">${format_date(object.booking_date)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057;">Horario:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #dee2e6; color: #343a40; text-align: right;">
+                                        ${'{:02.0f}:{:02.0f}'.format(*divmod(object.start_time * 60, 60))} - 
+                                        ${'{:02.0f}:{:02.0f}'.format(*divmod(object.end_time * 60, 60))}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">Precio Total:</td>
+                                    <td style="padding: 10px 0; color: #28a745; text-align: right; font-size: 1.2em; font-weight: bold;">
+                                        ${formatLang(object.total_price, currency_obj=object.currency_id)}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Información adicional -->
+                        % if object.notes:
+                        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                            <strong style="color: #856404;">Notas:</strong>
+                            <p style="color: #856404; margin: 5px 0 0 0;">${object.notes}</p>
+                        </div>
+                        % endif
+
+                        <!-- Instrucciones -->
+                        <div style="background-color: #d1ecf1; padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8; margin-bottom: 20px;">
+                            <strong style="color: #0c5460;">Importante:</strong>
+                            <ul style="color: #0c5460; margin: 5px 0 0 0; padding-left: 20px;">
+                                <li>Por favor llega 5 minutos antes de tu reserva</li>
+                                <li>Trae tu DNI para verificación</li>
+                                <li>Respeta el horario de inicio y fin</li>
+                            </ul>
+                        </div>
+
+                        <!-- Botón de acción -->
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="${object.get_portal_url()}" 
+                               style="display: inline-block; padding: 12px 30px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                Ver Mi Reserva
+                            </a>
+                        </div>
+
+                        <!-- Pie de página -->
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #6c757d; font-size: 0.9em;">
+                            <p>¿Necesitas ayuda? Contáctanos:</p>
+                            <p style="margin: 5px 0;">📧 soporte@tuempresa.com | 📱 +51 XXX XXX XXX</p>
+                            <p style="margin-top: 15px; font-size: 0.8em;">
+                                Para cancelar tu reserva, ingresa a tu portal y selecciona la opción "Cancelar Reserva"
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- Template para cancelación de reserva -->
+        <record id="sports_booking_cancellation_template" model="mail.template">
+            <field name="name">Cancelación de Reserva Deportiva</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="subject">Cancelación de Reserva ${object.name}</field>
+            <field name="email_from">${(object.user_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.partner_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                    <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #dc3545; margin: 0;">Reserva Cancelada</h1>
+                            <p style="color: #6c757d; margin-top: 10px;">Tu reserva ha sido cancelada</p>
+                        </div>
+
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3 style="color: #343a40; margin-top: 0;">Información de la Reserva Cancelada</h3>
+                            
+                            <p><strong>Número:</strong> ${object.name}</p>
+                            <p><strong>Cancha:</strong> ${object.field_id.name}</p>
+                            <p><strong>Fecha:</strong> ${format_date(object.booking_date)}</p>
+                            <p><strong>Horario:</strong> 
+                                ${'{:02.0f}:{:02.0f}'.format(*divmod(object.start_time * 60, 60))} - 
+                                ${'{:02.0f}:{:02.0f}'.format(*divmod(object.end_time * 60, 60))}
+                            </p>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="/bookings/new" 
+                               style="display: inline-block; padding: 12px 30px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                Hacer Nueva Reserva
+                            </a>
+                        </div>
+
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #6c757d; font-size: 0.9em;">
+                            <p>Si tienes alguna pregunta, no dudes en contactarnos</p>
+                            <p style="margin: 5px 0;">📧 soporte@tuempresa.com | 📱 +51 XXX XXX XXX</p>
+                        </div>
+
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- Reglas automatizadas (opcional) -->
+        
+        <!-- Enviar email al confirmar reserva -->
+        <record id="sports_booking_confirm_action" model="base.automation">
+            <field name="name">Enviar Email al Confirmar Reserva</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="state">code</field>
+            <field name="trigger">on_write</field>
+            <field name="filter_domain">[('state', '=', 'confirmed')]</field>
+            <field name="code">
+if record.partner_id.email:
+    template = env.ref('sports_booking.sports_booking_email_template')
+    template.send_mail(record.id, force_send=True)
+            </field>
+        </record>
+
+        <!-- Enviar email al cancelar reserva -->
+        <record id="sports_booking_cancel_action" model="base.automation">
+            <field name="name">Enviar Email al Cancelar Reserva</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="state">code</field>
+            <field name="trigger">on_write</field>
+            <field name="filter_domain">[('state', '=', 'cancelled')]</field>
+            <field name="code">
+if record.partner_id.email:
+    template = env.ref('sports_booking.sports_booking_cancellation_template')
+    template.send_mail(record.id, force_send=True)
+            </field>
+        </record>
+
+        <!-- Recordatorio 24h antes de la reserva (opcional) -->
+        <record id="sports_booking_reminder_action" model="base.automation">
+            <field name="name">Recordatorio 24h Antes de Reserva</field>
+            <field name="model_id" ref="model_sports_booking"/>
+            <field name="state">code</field>
+            <field name="trigger">on_time</field>
+            <field name="trg_date_id" ref="sports_booking.field_sports_booking__booking_date"/>
+            <field name="trg_date_range">-1</field>
+            <field name="trg_date_range_type">day</field>
+            <field name="filter_domain">[('state', '=', 'confirmed')]</field>
+            <field name="code">
+# Enviar recordatorio por email
+for rec in records:
+    if rec.partner_id.email:
+        rec.message_post(
+            body="Recordatorio: Tu reserva es mañana a las %s" % rec.start_time,
+            subject="Recordatorio de Reserva",
+            partner_ids=[rec.partner_id.id],
+        )
+            </field>
+        </record>
+
+    </data>
+</odoo>

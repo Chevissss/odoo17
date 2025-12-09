@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú Principal -->
+    <menuitem id="menu_sports_booking_root"
+              name="Reservas Deportivas"
+              sequence="10"
+              web_icon="sports_booking,static/description/icon.png"/>
+
+    <!-- Operaciones -->
+    <menuitem id="menu_sports_booking_operations"
+              name="Operaciones"
+              parent="menu_sports_booking_root"
+              sequence="10"/>
+
+    <menuitem id="menu_sports_booking_all"
+              name="Todas las Reservas"
+              parent="menu_sports_booking_operations"
+              action="action_sports_booking"
+              sequence="10"/>
+
+    <menuitem id="menu_sports_booking_new"
+              name="Nueva Reserva"
+              parent="menu_sports_booking_operations"
+              action="action_sports_booking"
+              sequence="20"/>
+
+    <!-- Configuración -->
+    <menuitem id="menu_sports_booking_configuration"
+              name="Configuración"
+              parent="menu_sports_booking_root"
+              sequence="90"
+              groups="sports_booking.group_sports_booking_admin"/>
+
+    <menuitem id="menu_sports_field"
+              name="Canchas Deportivas"
+              parent="menu_sports_booking_configuration"
+              action="action_sports_field"
+              sequence="10"/>
+
+    <!-- Reportes -->
+    <menuitem id="menu_sports_booking_reports"
+              name="Reportes"
+              parent="menu_sports_booking_root"
+              sequence="80"
+              groups="sports_booking.group_sports_booking_staff"/>
+
+    <menuitem id="menu_sports_booking_analysis"
+              name="Análisis de Reservas"
+              parent="menu_sports_booking_reports"
+              action="action_sports_booking"
+              sequence="10"/>
+
+</odoo>
