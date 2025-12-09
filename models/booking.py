@@ -148,6 +148,15 @@ class SportsBooking(models.Model):
                 'confirmation_date': fields.Datetime.now(),
             })
             booking.message_post(body=_('Reserva confirmada'))
+            
+            # Enviar email de confirmación si hay template disponible
+            try:
+                template = self.env.ref('sports_booking.sports_booking_email_template', raise_if_not_found=False)
+                if template and booking.partner_id.email:
+                    template.send_mail(booking.id, force_send=True)
+            except Exception as e:
+                # Log error but don't block the confirmation
+                booking.message_post(body=_('No se pudo enviar el email de confirmación: %s') % str(e))
         return True
     
     def action_set_pending(self):
@@ -180,6 +189,15 @@ class SportsBooking(models.Model):
                 raise UserError(_('No se pueden cancelar reservas completadas o ya canceladas.'))
             booking.write({'state': 'cancelled'})
             booking.message_post(body=_('Reserva cancelada'))
+            
+            # Enviar email de cancelación si hay template disponible
+            try:
+                template = self.env.ref('sports_booking.sports_booking_cancellation_template', raise_if_not_found=False)
+                if template and booking.partner_id.email:
+                    template.send_mail(booking.id, force_send=True)
+            except Exception as e:
+                # Log error but don't block the cancellation
+                booking.message_post(body=_('No se pudo enviar el email de cancelación: %s') % str(e))
         return True
     
     def action_reset_draft(self):

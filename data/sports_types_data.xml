@@ -155,57 +155,9 @@
             </field>
         </record>
 
-        <!-- Reglas automatizadas (opcional) -->
-        
-        <!-- Enviar email al confirmar reserva -->
-        <record id="sports_booking_confirm_action" model="base.automation">
-            <field name="name">Enviar Email al Confirmar Reserva</field>
-            <field name="model_id" ref="model_sports_booking"/>
-            <field name="state">code</field>
-            <field name="trigger">on_write</field>
-            <field name="filter_domain">[('state', '=', 'confirmed')]</field>
-            <field name="code">
-if record.partner_id.email:
-    template = env.ref('sports_booking.sports_booking_email_template')
-    template.send_mail(record.id, force_send=True)
-            </field>
-        </record>
-
-        <!-- Enviar email al cancelar reserva -->
-        <record id="sports_booking_cancel_action" model="base.automation">
-            <field name="name">Enviar Email al Cancelar Reserva</field>
-            <field name="model_id" ref="model_sports_booking"/>
-            <field name="state">code</field>
-            <field name="trigger">on_write</field>
-            <field name="filter_domain">[('state', '=', 'cancelled')]</field>
-            <field name="code">
-if record.partner_id.email:
-    template = env.ref('sports_booking.sports_booking_cancellation_template')
-    template.send_mail(record.id, force_send=True)
-            </field>
-        </record>
-
-        <!-- Recordatorio 24h antes de la reserva (opcional) -->
-        <record id="sports_booking_reminder_action" model="base.automation">
-            <field name="name">Recordatorio 24h Antes de Reserva</field>
-            <field name="model_id" ref="model_sports_booking"/>
-            <field name="state">code</field>
-            <field name="trigger">on_time</field>
-            <field name="trg_date_id" ref="sports_booking.field_sports_booking__booking_date"/>
-            <field name="trg_date_range">-1</field>
-            <field name="trg_date_range_type">day</field>
-            <field name="filter_domain">[('state', '=', 'confirmed')]</field>
-            <field name="code">
-# Enviar recordatorio por email
-for rec in records:
-    if rec.partner_id.email:
-        rec.message_post(
-            body="Recordatorio: Tu reserva es mañana a las %s" % rec.start_time,
-            subject="Recordatorio de Reserva",
-            partner_ids=[rec.partner_id.id],
-        )
-            </field>
-        </record>
+        <!-- Nota: Las reglas de automatización requieren el módulo 'base_automation'
+             Si deseas activar envío automático de emails, instala 'base_automation' 
+             y agrega las reglas manualmente desde Settings > Technical > Automation Rules -->
 
     </data>
 </odoo>
