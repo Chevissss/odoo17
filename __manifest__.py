@@ -22,9 +22,9 @@
         'security/ir.model.access.csv',
         # Datos base
         'data/sports_types_data.xml',
-        # Vistas backend
-        'views/sports_field_views.xml',
+        # Vistas backend (orden importante: primero booking, luego field)
         'views/booking_views.xml',
+        'views/sports_field_views.xml',
         'views/menu_views.xml',
         # Portal
         'views/portal_templates.xml',
