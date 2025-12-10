@@ -1,22 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ====================================================================================
-     ARCHIVO: views/portal_templates.xml
-     ==================================================================================== -->
 <odoo>
 
-    <!-- Extender menú del portal -->
-    <template id="portal_my_home_menu_bookings" name="Portal: Bookings Menu" inherit_id="portal.portal_my_home" priority="30">
-        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
-            <t t-set="portal_client_category_enable" t-value="True"/>
-        </xpath>
-        <div id="portal_client_category" position="inside">
+    <!-- Extender menú del portal home -->
+    <template id="portal_my_home_menu_bookings" name="Portal: Bookings Menu" inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-call="portal.portal_docs_entry">
-                <t t-set="icon" t-value="'/sports_booking/static/description/icon.png'"/>
                 <t t-set="title">Reservas de Canchas</t>
                 <t t-set="url" t-value="'/my/bookings'"/>
                 <t t-set="placeholder_count" t-value="'booking_count'"/>
             </t>
-        </div>
+        </xpath>
+    </template>
+
+    <!-- Alternativa si la anterior no funciona -->
+    <template id="portal_my_home_bookings_alt" name="Portal My Home Bookings" inherit_id="portal.portal_my_home" priority="30">
+        <xpath expr="//div[@class='o_portal_my_home']" position="inside">
+            <div class="col-lg-6 mb-3">
+                <a href="/my/bookings" class="o_portal_my_home_link">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fa fa-futbol-o fa-3x mb-3 text-primary"/>
+                            <h3>Mis Reservas</h3>
+                            <t t-if="booking_count">
+                                <p class="text-muted"><t t-esc="booking_count"/> reservas</p>
+                            </t>
+                            <t t-else="">
+                                <p class="text-muted">No tienes reservas</p>
+                            </t>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </xpath>
     </template>
 
     <!-- Lista de Mis Reservas -->
@@ -29,15 +44,20 @@
             </t>
             
             <t t-if="not bookings">
-                <div class="alert alert-info text-center" role="alert">
-                    <p class="mb-0">
-                        <strong>No tienes reservas aún.</strong>
+                <div class="alert alert-info text-center mt-5" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fa fa-info-circle"/> No tienes reservas aún
+                    </h4>
+                    <p class="mb-3">
+                        ¡Comienza a reservar tus canchas deportivas favoritas!
                     </p>
-                    <p class="mb-0">
-                        <a href="/bookings/new" class="btn btn-primary mt-3">
-                            <i class="fa fa-plus"/> Hacer una Reserva
-                        </a>
-                    </p>
+                    <hr/>
+                    <a href="/bookings/fields" class="btn btn-primary mr-2">
+                        <i class="fa fa-eye"/> Ver Canchas Disponibles
+                    </a>
+                    <a href="/bookings/new" class="btn btn-success">
+                        <i class="fa fa-plus"/> Hacer una Reserva
+                    </a>
                 </div>
             </t>
             

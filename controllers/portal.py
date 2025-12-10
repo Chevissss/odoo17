@@ -1,4 +1,5 @@
-from odoo import http, _
+# -*- coding: utf-8 -*-
+from odoo import http, _, fields
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
 from odoo.exceptions import AccessError, MissingError
@@ -8,11 +9,30 @@ import json
 class SportsBookingPortal(CustomerPortal):
     
     def _prepare_home_portal_values(self, counters):
+        """Sobrescribir para agregar contador de reservas"""
         values = super()._prepare_home_portal_values(counters)
+        
+        # Agregar contador de reservas
         if 'booking_count' in counters:
-            values['booking_count'] = request.env['sports.booking'].search_count([
-                ('partner_id', '=', request.env.user.partner_id.id)
-            ]) if request.env.user.partner_id else 0
+            partner = request.env.user.partner_id
+            booking_count = request.env['sports.booking'].search_count([
+                ('partner_id', '=', partner.id)
+            ]) if partner else 0
+            values['booking_count'] = booking_count
+        
+        return values
+    
+    def _prepare_portal_layout_values(self):
+        """Preparar valores base para el layout del portal"""
+        values = super()._prepare_portal_layout_values()
+        partner = request.env.user.partner_id
+        
+        # Agregar contador de reservas al layout
+        booking_count = request.env['sports.booking'].search_count([
+            ('partner_id', '=', partner.id)
+        ]) if partner else 0
+        values['booking_count'] = booking_count
+        
         return values
     
     @http.route(['/my/bookings', '/my/bookings/page/<int:page>'], type='http', auth='user', website=True)
@@ -20,8 +40,9 @@ class SportsBookingPortal(CustomerPortal):
         """Lista de reservas del usuario"""
         values = self._prepare_portal_layout_values()
         SportsBooking = request.env['sports.booking']
+        partner = request.env.user.partner_id
         
-        domain = [('partner_id', '=', request.env.user.partner_id.id)]
+        domain = [('partner_id', '=', partner.id)]
         
         # Filtros
         if filterby == 'upcoming':
@@ -84,10 +105,11 @@ class SportsBookingPortal(CustomerPortal):
         except (AccessError, MissingError):
             return request.redirect('/my')
         
-        values = {
+        values = self._prepare_portal_layout_values()
+        values.update({
             'booking': booking_sudo,
             'page_name': 'booking',
-        }
+        })
         
         return request.render("sports_booking.portal_booking_detail", values)
     
